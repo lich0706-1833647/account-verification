@@ -1,6 +1,7 @@
 package com.example.myapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -18,8 +19,16 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Collection;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private CountDownTimer timer;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
+    private FirebaseFirestore mStore;
+    private DocumentReference ref;
     private String uuid;
     private static final String TAG = "MyDebugTag";
 
@@ -38,51 +49,43 @@ public class MainActivity extends AppCompatActivity {
         signout = findViewById(R.id.btn_Logout);
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
+        mStore = FirebaseFirestore.getInstance();
+        String emailAcount = mUser.getEmail();
+        ref = mStore.collection("users").document(emailAcount);
         uuid = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
-        getLoginStatus();
+        ref.addSnapshotListener(this, new EventListener<DocumentSnapshot >() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(TAG, "Listen failed.", error);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    String uniqueID = snapshot.get("UUID").toString();
+                    if (!uniqueID.equals(uuid)) {
+                        setSignout();
+                    }
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+
+            }
+        });
 
         signout.setOnClickListener((v) -> {
-            FirebaseAuth.getInstance().signOut();
-            Toast.makeText(MainActivity.this, "Logged Out", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            setSignout();
         });
     }
 
-    private void getLoginStatus() {
-        timer = new CountDownTimer(30000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                Log.d(TAG, "onTick: " + 1/1000);
-            }
 
-            @Override
-            public void onFinish() {
-                timer.start();
-                String userID = mAuth.getCurrentUser().getEmail();
-                FirebaseFirestore.getInstance().collection("users")
-                        .document(userID)
-                        .get()
-                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                            @Override
-                            public void onSuccess(DocumentSnapshot snap) {
-                                String uniqueID = snap.get("UUID").toString();
-                                if (!uniqueID.equals(uuid)) {
-                                    FirebaseAuth.getInstance().signOut();
-                                    Toast.makeText(MainActivity.this, "Multiple Device Detected", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                                }
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            }
-        }.start();
+    protected void setSignout() {
+        FirebaseAuth.getInstance().signOut();
+        Toast.makeText(MainActivity.this, "Logged Out", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
     }
 
 }
