@@ -1,5 +1,4 @@
 # account-verification
--------------
 
 #### 实现
 安卓APP用户登录系统

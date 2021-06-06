@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "160686370078",
+    "project_id": "lich-usermanagement",
+    "storage_bucket": "lich-usermanagement.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:160686370078:android:82117504e12435d8c26d0f",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "160686370078-usn28kv9fd09sq2h49nc3u2uroh1e4d4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmcsJWEMMMjpPSZ2B-xW8KpMvpzNf_byA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "160686370078-usn28kv9fd09sq2h49nc3u2uroh1e4d4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
